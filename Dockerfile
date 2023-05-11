@@ -20,8 +20,7 @@ ARG PATH="/root/miniconda3/bin:${PATH}"
 
 RUN conda install -c conda-forge gxx
 
-RUN wget -O /usr/share/keyrings/gpg-pub-moritzbunkus.gpg 
-https://mkvtoolnix.download/gpg-pub-moritzbunkus.gpg
+RUN wget -O /usr/share/keyrings/gpg-pub-moritzbunkus.gpg https://mkvtoolnix.download/gpg-pub-moritzbunkus.gpg
 
 RUN apt update
 
