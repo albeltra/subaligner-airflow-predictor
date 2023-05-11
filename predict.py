@@ -2,12 +2,14 @@ import argparse
 import subprocess
 
 parser = argparse.ArgumentParser(description='Description of your program')
+parser.add_argument('-m', help='Description for bar argument', required=True)
 parser.add_argument('-v', help='Description for bar argument', required=True)
 parser.add_argument('-c', help='Description for bar argument', required=True)
 parser.add_argument('-s', help='Description for bar argument', required=True)
 args = vars(parser.parse_args())
 
-media_path = args.get('m')
+alignment_level = args.get('m')
+media_path = args.get('v')
 subtitle_track = args.get('s')
 audio_channel = args.get('c')
 print(media_path)
@@ -15,7 +17,7 @@ print(subtitle_track)
 
 command = ["subaligner",
            "-m",
-           "single",
+           alignment_level,
            "-v",
            media_path,
            "-s",
