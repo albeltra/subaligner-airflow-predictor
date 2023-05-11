@@ -11,9 +11,7 @@ RUN ["/bin/bash", "-c", "apt-get -y update &&\
 
 RUN apt-get install -y wget
 
-RUN wget 
-https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O 
-Miniconda3-latest-Linux-x86_64.sh &&\
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O Miniconda3-latest-Linux-x86_64.sh &&\
     chmod +x Miniconda3-latest-Linux-x86_64.sh &&\
     bash Miniconda3-latest-Linux-x86_64.sh -b
 
