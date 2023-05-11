@@ -33,3 +33,5 @@ RUN cd /subaligner && python3 -m pip install -e.
 RUN python3 -m pip install rq==1.12.0 pycountry
 
 RUN mkdir -p /airflow/xcom/
+
+COPY ./predict.py /scripts/
