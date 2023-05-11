@@ -1,5 +1,6 @@
 import argparse
 import subprocess
+from pathlib import Path
 
 parser = argparse.ArgumentParser(description='Description of your program')
 parser.add_argument('-m', help='Description for bar argument', required=True)
@@ -23,6 +24,8 @@ command = ["subaligner",
            "-s",
            subtitle_track,
            "-c",
-           audio_channel]
+           audio_channel,
+           "-o",
+           media_path.replace + ".srt"] 
 
 subprocess.run(command, check=True)
