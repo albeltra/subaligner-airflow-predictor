@@ -26,6 +26,6 @@ command = ["subaligner",
            "-c",
            audio_channel,
            "-o",
-           media_path.replace + ".srt"] 
+           "/tmp/" + Path(media_path).name + ".srt"]
 
 subprocess.run(command, check=True)
