@@ -214,7 +214,7 @@ class Predictor(OldPredictor):
         for key, value in result.items():
             modified_result['SUBALIGNER_' + key] = value
 
-        modified_result['SUBALIGNER_Duration'] = len(train_data)
+        # modified_result['SUBALIGNER_Duration'] = len(train_data)
         modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
         # modified_result['SUBALIGNER_Codec'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
