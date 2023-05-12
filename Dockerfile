@@ -35,3 +35,6 @@ RUN python3 -m pip install rq==1.12.0 pycountry
 RUN mkdir -p /airflow/xcom/
 
 COPY ./predict.py /scripts/
+
+RUN mv /subaligner/subaligner/predictor.py /subaligner/subaligner/old_predictor.py
+RUN cp ./predictor.py /subaligner/subaligner/predictor.py
