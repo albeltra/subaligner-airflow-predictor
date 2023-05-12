@@ -37,4 +37,5 @@ RUN mkdir -p /airflow/xcom/
 COPY ./predict.py /scripts/
 
 RUN mv /subaligner/subaligner/predictor.py /subaligner/subaligner/old_predictor.py
-RUN cp ./predictor.py /subaligner/subaligner/predictor.py
+
+COPY ./predictor.py /subaligner/subaligner/predictor.py
