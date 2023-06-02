@@ -39,3 +39,7 @@ COPY ./predict.py /scripts/
 RUN mv /subaligner/subaligner/predictor.py /subaligner/subaligner/old_predictor.py
 
 COPY ./predictor.py /subaligner/subaligner/predictor.py
+
+RUN mv /subaligner/subaligner/subaligner_1pass/__main__.py /subaligner/subaligner/subaligner_1pass/old__main__.py
+
+COPY ./__main__.py /subaligner/subaligner/subaligner_1pass/__main__.py

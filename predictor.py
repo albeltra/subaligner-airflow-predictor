@@ -5,14 +5,14 @@ import os
 import threading
 import traceback
 from copy import deepcopy
-from typing import Tuple, List, Optional, Dict, Any
+from typing import Tuple, List, Optional, Dict, Any, Union
 
 import numpy as np
 from pysrt import SubRipItem, SubRipFile
 from subaligner.old_predictor import Predictor as OldPredictor
 
 from .embedder import FeatureEmbedder
-from .exception import TerminalException
+from .exception import TerminalException, NoFrameRateException
 from .network import Network
 from .subtitle import Subtitle
 
@@ -20,6 +20,44 @@ from .subtitle import Subtitle
 class Predictor(OldPredictor):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def predict_single_pass(
+            self,
+            video_file_path: str,
+            subtitle_file_path: str,
+            weights_dir: str = os.path.join(os.path.dirname(__file__), "models", "training", "weights"),
+            channel: str = '0',
+            audio_file_path: str = None
+    ) -> Tuple[List[SubRipItem], str, Union[np.ndarray, List[float]], Optional[float]]:
+        """Predict time to shift with single pass
+
+            Arguments:
+                video_file_path {string} -- The input video file path.
+                audio_file_path {string} -- Optional audio file path.
+                subtitle_file_path {string} -- The path to the subtitle file.
+                weights_dir {string} -- The the model weights directory.
+
+            Returns:
+                tuple -- The shifted subtitles, the audio file path and the voice probabilities of the original audio.
+        """
+
+        weights_file_path = self.__get_weights_path(weights_dir)
+        audio_file_path = audio_file_path if audio_file_path else None
+        frame_rate = None
+        try:
+            subs, audio_file_path, voice_probabilities = self.__predict(
+                video_file_path, subtitle_file_path, weights_file_path, audio_file_path, channel=channel
+            )
+            try:
+                frame_rate = self.__media_helper.get_frame_rate(video_file_path)
+                self.__feature_embedder.step_sample = 1 / frame_rate
+                self.__on_frame_timecodes(subs)
+            except NoFrameRateException:
+                self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
+            return subs, audio_file_path, voice_probabilities, frame_rate
+        finally:
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
 
     def __predict(
             self,
