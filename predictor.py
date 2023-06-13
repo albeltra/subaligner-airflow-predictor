@@ -257,4 +257,5 @@ class Predictor(OldPredictor):
         # modified_result['SUBALIGNER_Codec'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
             json.dump(modified_result, f)
+        print(modified_result)
         return shifted_subs, audio_file_path, voice_probabilities
