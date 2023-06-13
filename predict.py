@@ -3,7 +3,7 @@ import subprocess
 import os
 from pathlib import Path
 
-media_path = ast.literal_eval(os.environ.get('mediaFile')['path'])
+media_path = ast.literal_eval(os.environ.get('mediaFile'))['path'] 
 
 subtitle_path = "/TEMP-SUBS/" + Path(media_path).name + '.srt'
 audio_file_path = "/TEMP-SUBS/" + Path(media_path).name + '.wav'
