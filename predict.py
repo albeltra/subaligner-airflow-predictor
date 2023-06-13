@@ -1,31 +1,21 @@
-import argparse
+import ast
 import subprocess
+import os
 from pathlib import Path
 
-parser = argparse.ArgumentParser(description='Description of your program')
-parser.add_argument('-m', help='Description for bar argument', required=True)
-parser.add_argument('-v', help='Description for bar argument', required=True)
-parser.add_argument('-c', help='Description for bar argument', required=True)
-parser.add_argument('-s', help='Description for bar argument', required=True)
-args = vars(parser.parse_args())
+media_path = ast.literal_eval(os.environ.get('mediaFile')['path'])
 
-alignment_level = args.get('m')
-media_path = args.get('v')
-subtitle_track = args.get('s')
-audio_channel = args.get('c')
-print(media_path)
-print(subtitle_track)
+subtitle_path = "/TEMP-SUBS/" + Path(media_path).name + '.srt'
+audio_file_path = "/TEMP-SUBS/" + Path(media_path).name + '.wav'
 
-command = ["subaligner",
+command = ["subaligner", 
            "-m",
-           alignment_level,
+           'single',
            "-v",
            media_path,
            "-s",
-           subtitle_track,
-           "-c",
-           audio_channel,
-           "-o",
-           "/tmp/" + Path(media_path).name + ".srt"]
+           subtitle_path,
+           "-a",
+           audio_file_path,]
 
 subprocess.run(command, check=True)
