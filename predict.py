@@ -8,7 +8,7 @@ media_path = ast.literal_eval(os.environ.get('mediaFile')['path'])
 subtitle_path = "/TEMP-SUBS/" + Path(media_path).name + '.srt'
 audio_file_path = "/TEMP-SUBS/" + Path(media_path).name + '.wav'
 
-command = ["subaligner", 
+command = ["subaligner",
            "-m",
            'single',
            "-v",
