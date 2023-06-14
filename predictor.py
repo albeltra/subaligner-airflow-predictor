@@ -139,8 +139,8 @@ class Predictor(OldPredictor):
 
         train_data = np.array([np.rot90(val) for val in train_data])
         train_data = train_data - np.mean(train_data, axis=0)
-        result["time_load_dataset"] = str(datetime.datetime.now() - pred_start)
-        result["X_shape"] = train_data.shape
+        result["time_load_dataset"] = (datetime.datetime.now() - pred_start).total_seconds()
+        result["X_shape"] = train_data.shape[0]
 
         # Load neural network
         input_shape = (train_data.shape[1], train_data.shape[2])
@@ -182,7 +182,7 @@ class Predictor(OldPredictor):
                 "ERROR: Audio is too short and no voice was detected"
             )
 
-        result["time_predictions"] = str(datetime.datetime.now() - pred_start)
+        result["time_predictions"] = (datetime.datetime.now() - pred_start).total_seconds()
 
         original_start = FeatureEmbedder.time_to_sec(subs[0].start)
         shifted_subs = deepcopy(subs)
@@ -227,7 +227,7 @@ class Predictor(OldPredictor):
 
         result["seconds_to_shift"] = seconds_to_shift
         result["original_start"] = original_start
-        total_elapsed_time = str(datetime.datetime.now() - pred_start)
+        total_elapsed_time = (datetime.datetime.now() - pred_start).total_seconds()
         result["time_sync"] = total_elapsed_time
         self.__LOGGER.debug("[{}] Statistics: {}".format(os.getpid(), result))
 
@@ -252,10 +252,7 @@ class Predictor(OldPredictor):
         for key, value in result.items():
             modified_result['SUBALIGNER_' + key] = value
 
-        # modified_result['SUBALIGNER_Duration'] = len(train_data)
         modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
-        # modified_result['SUBALIGNER_Codec'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
             json.dump(modified_result, f)
-        print(modified_result)
         return shifted_subs, audio_file_path, voice_probabilities
