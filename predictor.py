@@ -7,6 +7,7 @@ import traceback
 from copy import deepcopy
 from typing import Tuple, List, Optional, Dict, Any, Union
 
+import h5py
 import numpy as np
 from pysrt import SubRipItem, SubRipFile
 from subaligner.old_predictor import Predictor as OldPredictor
@@ -117,25 +118,28 @@ class Predictor(OldPredictor):
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
             raise TerminalException("ERROR: No subtitles passed in")
-        if lock is not None:
-            with lock:
-                try:
-                    train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
-                        audio_file_path, None, subtitles=subs
-                    )
-                except TerminalException:
-                    if os.path.exists(audio_file_path):
-                        os.remove(audio_file_path)
-                    raise
-        else:
-            try:
+
+        train_data = None
+        labels = None
+
+        data_path = video_file_path + '.hdf5'
+        if os.path.exists(data_path):
+            with h5py.File(data_path, 'r') as f:
+                train_data = np.array(f['data'])
+                labels = np.array(f['labels'])
+
+        try:
+            if not train_data and not labels:
                 train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
                     audio_file_path, None, subtitles=subs
                 )
-            except TerminalException:
-                if os.path.exists(audio_file_path):
-                    os.remove(audio_file_path)
-                raise
+                with h5py.File(data_path, 'a') as f:
+                    f['data'] = train_data
+                    f['labels'] = labels
+        except TerminalException:
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+            raise
 
         train_data = np.array([np.rot90(val) for val in train_data])
         train_data = train_data - np.mean(train_data, axis=0)
