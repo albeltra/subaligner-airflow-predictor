@@ -57,8 +57,7 @@ class Predictor(OldPredictor):
                 self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
             return subs, audio_file_path, voice_probabilities, frame_rate
         finally:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
+            pass
 
     def __predict(
             self,
@@ -129,7 +128,7 @@ class Predictor(OldPredictor):
                 labels = np.array(f['labels'])
 
         try:
-            if train_data is None and labels is None: 
+            if train_data is None and labels is None:
                 train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
                     audio_file_path, None, subtitles=subs
                 )
