@@ -129,7 +129,7 @@ class Predictor(OldPredictor):
                 labels = np.array(f['labels'])
 
         try:
-            if not train_data and not labels:
+            if train_data is None and labels is None: 
                 train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
                     audio_file_path, None, subtitles=subs
                 )
