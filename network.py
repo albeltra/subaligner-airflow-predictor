@@ -214,7 +214,7 @@ class Network(object):
             numpy.ndarray -- The Numpy array of predictions.
         """
         self.__model.load_weights(weights_filepath)
-        return self.__model.predict_on_batch(input_data)
+        return self.__model.predict(input_data)
 
     def fit_and_get_history(
         self,
