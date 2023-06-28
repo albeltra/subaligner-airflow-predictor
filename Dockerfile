@@ -42,6 +42,8 @@ RUN mv /subaligner/subaligner/predictor.py /subaligner/subaligner/old_predictor.
 
 COPY ./predictor.py /subaligner/subaligner/predictor.py
 
+COPY ./network.py /subaligner/subaligner/network.py
+
 RUN mv /subaligner/subaligner/subaligner_1pass/__main__.py /subaligner/subaligner/subaligner_1pass/old__main__.py
 
 COPY ./__main__.py /subaligner/subaligner/subaligner_1pass/__main__.py
