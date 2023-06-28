@@ -202,7 +202,7 @@ class Predictor(OldPredictor):
         # else:
         min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
             voice_probabilities, subs
-        ) 
+        )
 
         pos_to_delay = min_log_loss_pos
         result["loss"] = min_log_loss
@@ -258,5 +258,5 @@ class Predictor(OldPredictor):
 
         modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
-        #     json.dump(modified_result, f)
+            json.dump(modified_result, f)
         return audio_file_path, audio_file_path, voice_probabilities
