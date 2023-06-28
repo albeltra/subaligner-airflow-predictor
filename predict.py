@@ -6,9 +6,9 @@ from subaligner.predictor import Predictor
 
 media_path = ast.literal_eval(os.environ.get('mediaFile'))['path']
 
-subtitle_path = "/data/" + Path(media_path).name + '.srt'
-audio_file_path = "/data/" + Path(media_path).name + '.wav'
-video_file_path = "/data/" + Path(media_path).name
+subtitle_path = "/audio-subs/" + Path(media_path).name + '.srt'
+audio_file_path = "/audio-subs/" + Path(media_path).name + '.wav'
+video_file_path = "/data/v4/" + Path(media_path).name
 
 predictor = Predictor()
 predictor.predict_single_pass(video_file_path=video_file_path,
