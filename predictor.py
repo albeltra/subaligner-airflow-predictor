@@ -165,7 +165,7 @@ class Predictor(OldPredictor):
         #             del train_data
         #             del labels
         #             gc.collect()
-        # else:  
+        # else:
         try:
             self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
             voice_probabilities = network.get_predictions(train_data, weights_file_path)

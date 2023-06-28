@@ -72,7 +72,7 @@ class Network(object):
             secret == Network.__secret
         ), "Only factory methods are supported when creating instances"
 
-        # Network.__set_keras_backend(backend)
+        Network.__set_keras_backend(backend)
 
         if (hyperparameters.network_type == Network.__UNKNOWN and model_path is not None):
             self.__model = load_model(model_path)
@@ -545,8 +545,8 @@ class Network(object):
 
         if backend.lower() == "tensorflow":
             # Set the number of inter/intra threads to the number of physical cores (experiment shows this is the best)
-            physical_core_num = psutil.cpu_count(logical=False)
-            tf.config.threading.set_inter_op_parallelism_threads(physical_core_num)
+            # physical_core_num = psutil.cpu_count(logical=False)
+            tf.config.threading.set_inter_op_parallelism_threads(4)
             tf.config.threading.set_intra_op_parallelism_threads(1)
             tf.config.set_soft_device_placement(True)
             physical_devices = tf.config.experimental.list_physical_devices("GPU")
