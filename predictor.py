@@ -194,15 +194,15 @@ class Predictor(OldPredictor):
 
         self.__LOGGER.info("[{}] Aligning subtitle with video...".format(os.getpid()))
 
-        if lock is not None:
-            with lock:
-                min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-                    voice_probabilities, subs
-                )
-        else:
-            min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-                voice_probabilities, subs
-            )
+        # if lock is not None:
+        #     with lock:
+        #         min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
+        #             voice_probabilities, subs
+        #         )
+        # else:
+        min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
+            voice_probabilities, subs
+        )
 
         pos_to_delay = min_log_loss_pos
         result["loss"] = min_log_loss
