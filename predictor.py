@@ -140,8 +140,8 @@ class Predictor(OldPredictor):
                 os.remove(audio_file_path)
             raise
 
-        train_data = np.array([np.rot90(val) for val in train_data])
-        train_data = train_data - np.mean(train_data, axis=0)
+        # train_data = np.array([np.rot90(val) for val in train_data])
+        # train_data = train_data - np.mean(train_data, axis=0)
         result["time_load_dataset"] = (datetime.datetime.now() - pred_start).total_seconds()
         result["X_shape"] = train_data.shape[0]
 
