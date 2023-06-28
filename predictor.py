@@ -109,14 +109,14 @@ class Predictor(OldPredictor):
         else:
             raise TerminalException("Neither audio nor video is passed in")
 
-        subs = None 
+        subs = None
         if subtitle_file_path is not None:
             for extension in ['.vob.srt', '.pgs.srt', '.srt.srt']:
                 if os.path.exists(subtitle_file_path + extension):
                     subs = Subtitle.load(subtitle_file_path + extension).subs
+                    result["subtitle_file_path"] = subtitle_file_path + extension
                 else:
                     continue
-            result["subtitle_file_path"] = subtitle_file_path
         elif subtitles is not None:
             subs = subtitles
         else:
@@ -161,7 +161,7 @@ class Predictor(OldPredictor):
             with lock:
                 try:
                     self.__LOGGER.info("[{}] Start predicting...".format(os.getpid()))
-                    voice_probabilities = network.get_predictions(train_data, weights_file_path)[0]
+                    voice_probabilities = network.get_predictions(train_data, weights_file_path)
                     self.__LOGGER.info("Done predicting")
                 except Exception as e:
                     self.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
@@ -174,7 +174,7 @@ class Predictor(OldPredictor):
         else:
             try:
                 self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
-                voice_probabilities = network.get_predictions(train_data, weights_file_path)[0]
+                voice_probabilities = network.get_predictions(train_data, weights_file_path)
             except Exception as e:
                 self.__LOGGER.error(
                     "[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
@@ -265,4 +265,65 @@ class Predictor(OldPredictor):
         modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
             json.dump(modified_result, f)
-        return shifted_subs, audio_file_path, voice_probabilities
+        return shifted_subs, audio_file_path, voice_probabilities[0]
+
+    def get_min_log_loss_and_index(self, voice_probabilities: np.ndarray, subs: SubRipFile) -> Tuple[float, int]:
+        """Returns the minimum loss value and its shift position after going through all possible shifts.
+            Arguments:
+                voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
+                subs {list} -- A list of subtitle segments.
+            Returns:
+                tuple -- The minimum loss value and its position.
+        """
+
+        local_subs = deepcopy(subs)
+
+        local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
+        subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs)
+        if len(subtitle_mask) == 0:
+            raise TerminalException("Subtitle is empty")
+
+        # Adjust the voice duration when it is shorter than the subtitle duration
+        # so we can have room to shift the subtitle back and forth based on losses.
+        head_room = voice_probabilities.shape[1] - len(subtitle_mask)
+        self.__LOGGER.debug("head room: {}".format(head_room))
+        if head_room < 0:
+            local_vp = np.vstack(
+                [
+                    voice_probabilities[0],
+                    [np.zeros(voice_probabilities.shape[2])] * (-head_room * 5),
+                ]
+            )
+        else:
+            local_vp = voice_probabilities
+        head_room = len(local_vp) - len(subtitle_mask)
+        if head_room > 20000 * 6 * 3:
+            self.__LOGGER.error("head room: {}".format(head_room))
+            raise TerminalException(
+                "Maximum head room reached due to the suspicious audio or subtitle duration"
+            )
+
+        log_losses = []
+        self.__LOGGER.debug(
+            "Start calculating {} log loss(es)...".format(head_room)
+        )
+        for i in np.arange(0, head_room):
+            log_losses.append(
+                log_loss(
+                    subtitle_mask,
+                    local_vp[i:i + len(subtitle_mask)],
+                    labels=[0, 1],
+                )
+            )
+        if log_losses:
+            min_log_loss = min(log_losses)
+            min_log_loss_idx = log_losses.index(min_log_loss)
+        else:
+            min_log_loss = None
+            min_log_loss_idx = 0
+
+        del local_vp
+        del log_losses
+        gc.collect()
+
+        return min_log_loss, min_log_loss_idx
