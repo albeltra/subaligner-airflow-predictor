@@ -124,8 +124,8 @@ class Predictor(OldPredictor):
         data_path = video_file_path + '.hdf5'
         if os.path.exists(data_path):
             with h5py.File(data_path, 'r') as f:
-                train_data = np.array(f['data'])[np.newaxis, ...]
-                labels = np.array(f['labels'])[np.newaxis, ...]
+                train_data = np.array(f['data'])#[np.newaxis, ...]
+                labels = np.array(f['labels'])#[np.newaxis, ...]
 
         try:
             if train_data is None and labels is None:
@@ -140,8 +140,8 @@ class Predictor(OldPredictor):
                 os.remove(audio_file_path)
             raise
 
-        # train_data = np.array([np.rot90(val) for val in train_data])
-        # train_data = train_data - np.mean(train_data, axis=0)
+        train_data = np.array([np.rot90(val) for val in train_data])
+        train_data = train_data - np.mean(train_data, axis=0)
         result["time_load_dataset"] = (datetime.datetime.now() - pred_start).total_seconds()
         result["X_shape"] = train_data.shape[0]
 
