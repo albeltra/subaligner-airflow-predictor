@@ -304,7 +304,7 @@ class Predictor(OldPredictor):
             )
 
         log_losses = []
-        self.__LOGGER.debug(
+        self.__LOGGER.info(
             "Start calculating {} log loss(es)...".format(head_room)
         )
         for i in np.arange(0, head_room):
