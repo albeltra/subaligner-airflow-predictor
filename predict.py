@@ -12,4 +12,5 @@ video_file_path = "/data/" + Path(media_path).name
 
 predictor = Predictor()
 predictor.predict_single_pass(video_file_path=video_file_path,
-                              subtitle_file_path=subtitle_path)
+                              subtitle_file_path=subtitle_path,
+                              audio_file_path=audio_file_path) 
