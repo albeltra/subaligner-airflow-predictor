@@ -30,9 +30,9 @@ RUN git clone https://github.com/baxtree/subaligner.git /subaligner
 
 RUN cd /subaligner && python3 -m pip install -e.
 
-COPY ./subaligner-trained/subaligner/models/training/weights/weights.hdf5 /subaligner-trained/subaligner/models/training/weights/
+COPY ./subaligner-trained/subaligner/models/training/weights/weights.hdf5 /subaligner/subaligner/models/training/weights/
 
-COPY ./subaligner-trained/subaligner/models/training/model/model.hdf5 /subaligner-trained/subaligner/models/training/model/
+COPY ./subaligner-trained/subaligner/models/training/model/model.hdf5 /subaligner/subaligner/models/training/model/
 
 RUN mkdir -p /airflow/xcom/
 
