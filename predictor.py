@@ -151,33 +151,33 @@ class Predictor(OldPredictor):
 
         # Network class is not thread safe so a new graph is created for each thread
         pred_start = datetime.datetime.now()
-        if lock is not None:
-            with lock:
-                try:
-                    self.__LOGGER.info("[{}] Start predicting...".format(os.getpid()))
-                    voice_probabilities = network.get_predictions(train_data, weights_file_path)
-                    self.__LOGGER.info("Done predicting")
-                except Exception as e:
-                    self.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
-                    traceback.print_tb(e.__traceback__)
-                    raise TerminalException("Prediction failed") from e
-                finally:
-                    del train_data
-                    del labels
-                    gc.collect()
-        else:
-            try:
-                self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
-                voice_probabilities = network.get_predictions(train_data, weights_file_path)
-            except Exception as e:
-                self.__LOGGER.error(
-                    "[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
-                traceback.print_tb(e.__traceback__)
-                raise TerminalException("Prediction failed") from e
-            finally:
-                del train_data
-                del labels
-                gc.collect()
+        # if lock is not None:
+        #     with lock:
+        #         try:
+        #             self.__LOGGER.info("[{}] Start predicting...".format(os.getpid()))
+        #             voice_probabilities = network.get_predictions(train_data, weights_file_path)
+        #             self.__LOGGER.info("Done predicting")
+        #         except Exception as e:
+        #             self.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
+        #             traceback.print_tb(e.__traceback__)
+        #             raise TerminalException("Prediction failed") from e
+        #         finally:
+        #             del train_data
+        #             del labels
+        #             gc.collect()
+        # else:  
+        try:
+            self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
+            voice_probabilities = network.get_predictions(train_data, weights_file_path)
+        except Exception as e:
+            self.__LOGGER.error(
+                "[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
+            traceback.print_tb(e.__traceback__)
+            raise TerminalException("Prediction failed") from e
+        finally:
+            del train_data
+            del labels
+            gc.collect()
 
         if len(voice_probabilities) <= 0:
             if os.path.exists(audio_file_path):
