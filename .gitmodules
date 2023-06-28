@@ -1,3 +1,0 @@
-[submodule "subaligner-trained"]
-	path = subaligner-trained
-	url = git@github.com:albeltra/subaligner-trained.git
