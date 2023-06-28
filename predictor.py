@@ -155,7 +155,7 @@ class Predictor(OldPredictor):
             with lock:
                 try:
                     self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
-                    print('Train data shape:', train_data.shape) 
+                    print('Train data shape:', train_data.shape)
                     voice_probabilities = network.get_predictions(train_data, weights_file_path)
                 except Exception as e:
                     self.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
