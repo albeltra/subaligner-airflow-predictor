@@ -3,6 +3,7 @@ import gc
 import json
 import os
 import threading
+from sklearn.metrics import log_loss
 import traceback
 from copy import deepcopy
 from typing import Tuple, List, Optional, Dict, Any, Union
@@ -260,3 +261,64 @@ class Predictor(OldPredictor):
         # with open("/airflow/xcom/return.json", "w") as f:
         #     json.dump(modified_result, f)
         return audio_file_path, audio_file_path, voice_probabilities
+
+    def get_min_log_loss_and_index(self, voice_probabilities: np.ndarray, subs: SubRipFile) -> Tuple[float, int]:
+        """Returns the minimum loss value and its shift position after going through all possible shifts.
+            Arguments:
+                voice_probabilities {list} -- A list of probabilities of audio chunks being speech.
+                subs {list} -- A list of subtitle segments.
+            Returns:
+                tuple -- The minimum loss value and its position.
+        """
+
+        local_subs = deepcopy(subs)
+
+        local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
+        subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs)
+        if len(subtitle_mask) == 0:
+            raise TerminalException("Subtitle is empty")
+
+        # Adjust the voice duration when it is shorter than the subtitle duration
+        # so we can have room to shift the subtitle back and forth based on losses.
+        head_room = voice_probabilities.shape[1] - len(subtitle_mask) 
+        self.__LOGGER.debug("head room: {}".format(head_room))
+        if head_room < 0:
+            local_vp = np.vstack(
+                [
+                    voice_probabilities,
+                    [np.zeros(voice_probabilities.shape[1])] * (-head_room * 5),
+                ]
+            )
+        else:
+            local_vp = voice_probabilities
+        head_room = len(local_vp) - len(subtitle_mask)
+        if head_room > Predictor.__MAX_HEAD_ROOM:
+            self.__LOGGER.error("head room: {}".format(head_room))
+            raise TerminalException(
+                "Maximum head room reached due to the suspicious audio or subtitle duration"
+            )
+
+        log_losses = []
+        self.__LOGGER.debug(
+            "Start calculating {} log loss(es)...".format(head_room)
+        )
+        for i in np.arange(0, head_room):
+            log_losses.append(
+                log_loss(
+                    subtitle_mask,
+                    local_vp[i:i + len(subtitle_mask)],
+                    labels=[0, 1],
+                )
+            )
+        if log_losses:
+            min_log_loss = min(log_losses)
+            min_log_loss_idx = log_losses.index(min_log_loss)
+        else:
+            min_log_loss = None
+            min_log_loss_idx = 0
+
+        del local_vp
+        del log_losses
+        gc.collect()
+
+        return min_log_loss, min_log_loss_idx
