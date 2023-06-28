@@ -110,7 +110,12 @@ class Predictor(OldPredictor):
             raise TerminalException("Neither audio nor video is passed in")
 
         if subtitle_file_path is not None:
-            subs = Subtitle.load(subtitle_file_path).subs
+            for extension in ['.vob.srt', '.pgs.srt', '.srt.srt']:
+                if os.path.exists(subtitle_file_path + extension):
+                    subs = Subtitle.load(subtitle_file_path + extension).subs
+                else:
+                    subs = None
+                    continue
             result["subtitle_file_path"] = subtitle_file_path
         elif subtitles is not None:
             subs = subtitles

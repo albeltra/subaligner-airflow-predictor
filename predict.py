@@ -6,7 +6,7 @@ from subaligner.predictor import Predictor
 
 media_path = ast.literal_eval(os.environ.get('mediaFile'))['path']
 
-subtitle_path = "/audio-subs/" + Path(media_path).name + '.srt'
+subtitle_path = "/audio-subs/" + Path(media_path).name
 audio_file_path = "/audio-subs/" + Path(media_path).name + '.wav'
 video_file_path = "/data/v4/" + Path(media_path).name
 
