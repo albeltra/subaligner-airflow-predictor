@@ -179,84 +179,84 @@ class Predictor(OldPredictor):
             del labels
             gc.collect()
 
-        # if len(voice_probabilities) <= 0:
-        #     if os.path.exists(audio_file_path):
-        #         os.remove(audio_file_path)
-        #     raise TerminalException(
-        #         "ERROR: Audio is too short and no voice was detected"
-        #     )
-        #
-        # result["time_predictions"] = (datetime.datetime.now() - pred_start).total_seconds()
-        #
-        # original_start = FeatureEmbedder.time_to_sec(subs[0].start)
-        # shifted_subs = deepcopy(subs)
-        # subs.shift(seconds=-original_start)
-        #
-        # self.__LOGGER.info("[{}] Aligning subtitle with video...".format(os.getpid()))
-        #
-        # # if lock is not None:
-        # #     with lock:
-        # #         min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-        # #             voice_probabilities, subs
-        # #         )
-        # # else:
-        # min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-        #     voice_probabilities, subs
-        # )
-        #
-        # pos_to_delay = min_log_loss_pos
-        # result["loss"] = min_log_loss
-        #
-        # self.__LOGGER.info("[{}] Subtitle aligned".format(os.getpid()))
-        #
-        # if subtitle_file_path is not None:  # for the first pass
-        #     seconds_to_shift = (
-        #         self.__feature_embedder.position_to_duration(pos_to_delay) - original_start
-        #     )
-        # elif subtitles is not None:  # for each in second pass
-        #     seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap if previous_gap is not None else 0.0
-        # else:
-        #     if os.path.exists(audio_file_path):
-        #         os.remove(audio_file_path)
-        #     raise ValueError("ERROR: No subtitles passed in")
-        #
-        # if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
-        #     if os.path.exists(audio_file_path):
-        #         os.remove(audio_file_path)
-        #     raise TerminalException(
-        #         "Average shift duration ({} secs) have been reached".format(
-        #             Predictor.__MAX_SHIFT_IN_SECS
+        if len(voice_probabilities) <= 0:
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+            raise TerminalException(
+                "ERROR: Audio is too short and no voice was detected"
+            )
+
+        result["time_predictions"] = (datetime.datetime.now() - pred_start).total_seconds()
+
+        original_start = FeatureEmbedder.time_to_sec(subs[0].start)
+        shifted_subs = deepcopy(subs)
+        subs.shift(seconds=-original_start)
+
+        self.__LOGGER.info("[{}] Aligning subtitle with video...".format(os.getpid()))
+
+        # if lock is not None:
+        #     with lock:
+        #         min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
+        #             voice_probabilities, subs
         #         )
-        #     )
-        #
-        # result["seconds_to_shift"] = seconds_to_shift
-        # result["original_start"] = original_start
-        # total_elapsed_time = (datetime.datetime.now() - pred_start).total_seconds()
-        # result["time_sync"] = total_elapsed_time
-        # self.__LOGGER.debug("[{}] Statistics: {}".format(os.getpid(), result))
-        #
-        # self.__LOGGER.debug("[{}] Total Time: {}".format(os.getpid(), total_elapsed_time))
-        # self.__LOGGER.debug(
-        #     "[{}] Seconds to shift: {}".format(os.getpid(), seconds_to_shift)
-        # )
-        #
-        # # For each subtitle chunk, its end time should not be later than the end time of the audio segment
-        # if max_shift_secs is not None and seconds_to_shift <= max_shift_secs:
-        #     shifted_subs.shift(seconds=seconds_to_shift)
-        # elif max_shift_secs is not None and seconds_to_shift > max_shift_secs:
-        #     self.__LOGGER.warning(
-        #         "[{}] Maximum {} seconds shift has reached".format(os.getpid(), max_shift_secs)
-        #     )
-        #     shifted_subs.shift(seconds=max_shift_secs)
         # else:
-        #     shifted_subs.shift(seconds=seconds_to_shift)
-        # self.__LOGGER.debug("[{}] Subtitle shifted".format(os.getpid()))
-        #
-        # modified_result = {}
-        # for key, value in result.items():
-        #     modified_result['SUBALIGNER_' + key] = value
-        #
-        # modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
-        # with open("/airflow/xcom/return.json", "w") as f:
+        min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
+            voice_probabilities, subs
+        ) 
+
+        pos_to_delay = min_log_loss_pos
+        result["loss"] = min_log_loss
+
+        self.__LOGGER.info("[{}] Subtitle aligned".format(os.getpid()))
+
+        if subtitle_file_path is not None:  # for the first pass
+            seconds_to_shift = (
+                self.__feature_embedder.position_to_duration(pos_to_delay) - original_start
+            )
+        elif subtitles is not None:  # for each in second pass
+            seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap if previous_gap is not None else 0.0
+        else:
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+            raise ValueError("ERROR: No subtitles passed in")
+
+        if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
+            if os.path.exists(audio_file_path):
+                os.remove(audio_file_path)
+            raise TerminalException(
+                "Average shift duration ({} secs) have been reached".format(
+                    Predictor.__MAX_SHIFT_IN_SECS
+                )
+            )
+
+        result["seconds_to_shift"] = seconds_to_shift
+        result["original_start"] = original_start
+        total_elapsed_time = (datetime.datetime.now() - pred_start).total_seconds()
+        result["time_sync"] = total_elapsed_time
+        self.__LOGGER.debug("[{}] Statistics: {}".format(os.getpid(), result))
+
+        self.__LOGGER.debug("[{}] Total Time: {}".format(os.getpid(), total_elapsed_time))
+        self.__LOGGER.debug(
+            "[{}] Seconds to shift: {}".format(os.getpid(), seconds_to_shift)
+        )
+
+        # For each subtitle chunk, its end time should not be later than the end time of the audio segment
+        if max_shift_secs is not None and seconds_to_shift <= max_shift_secs:
+            shifted_subs.shift(seconds=seconds_to_shift)
+        elif max_shift_secs is not None and seconds_to_shift > max_shift_secs:
+            self.__LOGGER.warning(
+                "[{}] Maximum {} seconds shift has reached".format(os.getpid(), max_shift_secs)
+            )
+            shifted_subs.shift(seconds=max_shift_secs)
+        else:
+            shifted_subs.shift(seconds=seconds_to_shift)
+        self.__LOGGER.debug("[{}] Subtitle shifted".format(os.getpid()))
+
+        modified_result = {}
+        for key, value in result.items():
+            modified_result['SUBALIGNER_' + key] = value
+
+        modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
+        with open("/airflow/xcom/return.json", "w") as f:
         #     json.dump(modified_result, f)
         return audio_file_path, audio_file_path, voice_probabilities
