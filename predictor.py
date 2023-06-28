@@ -124,8 +124,8 @@ class Predictor(OldPredictor):
         data_path = video_file_path + '.hdf5'
         if os.path.exists(data_path):
             with h5py.File(data_path, 'r') as f:
-                train_data = np.array(f['data'])
-                labels = np.array(f['labels'])
+                train_data = np.array(f['data'])[np.newaxis, ...]
+                labels = np.array(f['labels'])[np.newaxis, ...]
 
         try:
             if train_data is None and labels is None:
