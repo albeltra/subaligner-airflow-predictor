@@ -162,7 +162,7 @@ class Predictor(OldPredictor):
             with lock:
                 try:
                     self.__LOGGER.info("[{}] Start predicting...".format(os.getpid()))
-                    voice_probabilities = network.get_predictions(train_data, weights_file_path)
+                    voice_probabilities = network.get_predictions(train_data, weights_file_path)[0]
                     self.__LOGGER.info("Done predicting")
                 except Exception as e:
                     self.__LOGGER.error("[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
@@ -175,7 +175,7 @@ class Predictor(OldPredictor):
         else:
             try:
                 self.__LOGGER.debug("[{}] Start predicting...".format(os.getpid()))
-                voice_probabilities = network.get_predictions(train_data, weights_file_path)
+                voice_probabilities = network.get_predictions(train_data, weights_file_path)[0]
             except Exception as e:
                 self.__LOGGER.error(
                     "[{}] Prediction failed: {}\n{}".format(os.getpid(), str(e), "".join(traceback.format_stack())))
@@ -262,7 +262,7 @@ class Predictor(OldPredictor):
         modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
             json.dump(modified_result, f)
-        return shifted_subs, audio_file_path, voice_probabilities[0]
+        return shifted_subs, audio_file_path, voice_probabilities
 
     def get_min_log_loss_and_index(self, voice_probabilities: np.ndarray, subs: SubRipFile) -> Tuple[float, int]:
         """Returns the minimum loss value and its shift position after going through all possible shifts.
@@ -282,13 +282,13 @@ class Predictor(OldPredictor):
 
         # Adjust the voice duration when it is shorter than the subtitle duration
         # so we can have room to shift the subtitle back and forth based on losses.
-        head_room = voice_probabilities.shape[1] - len(subtitle_mask)
+        head_room = len(voice_probabilities) - len(subtitle_mask)
         self.__LOGGER.debug("head room: {}".format(head_room))
         if head_room < 0:
             local_vp = np.vstack(
                 [
                     voice_probabilities[0],
-                    [np.zeros(2)] * (-head_room * 5),
+                    [np.zeros(voice_probabilities.shape[1])] * (-head_room * 5),
                 ]
             )
         else:
