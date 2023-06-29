@@ -310,11 +310,13 @@ class Predictor(OldPredictor):
         print("SUBTITLE MASK")
         print(subtitle_mask)
         print("SUBTITLE_MASK_SHAOPE:", subtitle_mask.shape)
+        print("LOCAL_VP_SHAPE:", local_vp.shape)
+        local_vp = local_vp.reshape(-1,)
+        print("LOCAL_VP_SHAPE:", local_vp.shape)
         for i in np.arange(0, head_room):
             temp = log_loss(
                     subtitle_mask,
-                    local_vp[i:i + len(subtitle_mask)],
-                    labels=[0, 1],
+                    local_vp[i:i + len(subtitle_mask)]
                 )
             print("TEMP LOSS", temp)
             log_losses.append(
