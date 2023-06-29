@@ -315,7 +315,8 @@ class Predictor(OldPredictor):
         subtitle_mask = subtitle_mask.astype(np.float32)
         print("LOCAL_VP_SHAPE:", local_vp.shape)
         print(np.unique(subtitle_mask))
-        local_vp = np.maximum(1*10**-15, np.minimum(1 - 1*10**-3, local_vp))
+        eps = 1*10**-4
+        local_vp = np.maximum(eps, np.minimum(1 - eps, local_vp))
         print(np.min(local_vp))
         print(np.max(local_vp))
         for i in np.arange(0, head_room):
