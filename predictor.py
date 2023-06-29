@@ -308,13 +308,16 @@ class Predictor(OldPredictor):
             "Start calculating {} log loss(es)...".format(head_room)
         )
         for i in np.arange(0, head_room):
-            log_losses.append(
-                log_loss(
+            temp = log_loss(
                     subtitle_mask,
                     local_vp[i:i + len(subtitle_mask)],
                     labels=[0, 1],
                 )
+            print("TEMP LOSS", temp)
+            log_losses.append(
+                temp
             )
+        print("LOG LOSSES:", log_losses) 
         if log_losses:
             min_log_loss = min(log_losses)
             min_log_loss_idx = log_losses.index(min_log_loss)
