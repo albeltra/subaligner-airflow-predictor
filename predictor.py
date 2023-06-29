@@ -131,16 +131,17 @@ class Predictor(OldPredictor):
         if os.path.exists(data_path):
             with h5py.File(data_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
-                labels = np.array(f['labels'])[np.newaxis, ...]
+                # labels = np.array(f['labels'])[np.newaxis, ...]
 
         try:
             if train_data is None and labels is None:
-                train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
+                train_data, _ = self.__feature_embedder.extract_data_and_label_from_audio(
                     audio_file_path, None, subtitles=subs
                 )
                 with h5py.File(data_path, 'a') as f:
                     f['data'] = train_data
                     f['labels'] = labels
+                train_data = train_data[np.newaxis, ...]
         except TerminalException:
             if os.path.exists(audio_file_path):
                 os.remove(audio_file_path)
@@ -169,7 +170,7 @@ class Predictor(OldPredictor):
                     raise TerminalException("Prediction failed") from e
                 finally:
                     del train_data
-                    del labels
+                    # del labels
                     gc.collect()
         else:
             try:
@@ -182,7 +183,7 @@ class Predictor(OldPredictor):
                 raise TerminalException("Prediction failed") from e
             finally:
                 del train_data
-                del labels
+                # del labels
                 gc.collect()
 
         if len(voice_probabilities) <= 0:
@@ -202,13 +203,9 @@ class Predictor(OldPredictor):
 
         if lock is not None:
             with lock:
-                min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-                    voice_probabilities, subs
-                )
+                min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(voice_probabilities, subs)
         else:
-            min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(
-                voice_probabilities, subs
-            )
+            min_log_loss, min_log_loss_pos = self.get_min_log_loss_and_index(voice_probabilities, subs)
 
         pos_to_delay = min_log_loss_pos
         result["loss"] = min_log_loss
@@ -291,7 +288,7 @@ class Predictor(OldPredictor):
             local_vp = np.vstack(
                 [
                     voice_probabilities[0],
-                    [np.zeros(voice_probabilities.shape[2])] * (-head_room * 5),
+                    [np.zeros(2)] * (-head_room * 5),
                 ]
             )
         else:
