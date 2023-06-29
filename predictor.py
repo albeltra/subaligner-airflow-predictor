@@ -274,6 +274,8 @@ class Predictor(OldPredictor):
         """
 
         local_subs = deepcopy(subs)
+        print(voice_probabilities)
+        print(voice_probabilities.shape)
 
         local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
         subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs)
@@ -283,6 +285,7 @@ class Predictor(OldPredictor):
         # Adjust the voice duration when it is shorter than the subtitle duration
         # so we can have room to shift the subtitle back and forth based on losses.
         head_room = len(voice_probabilities) - len(subtitle_mask)
+        print('HEAD ROOM:', head_room)
         self.__LOGGER.debug("head room: {}".format(head_room))
         if head_room < 0:
             local_vp = np.vstack(
