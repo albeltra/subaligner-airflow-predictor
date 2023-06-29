@@ -318,13 +318,13 @@ class Predictor(OldPredictor):
         eps = 1*10**-4
         local_vp = np.maximum(eps, np.minimum(1 - eps, local_vp))
         print(np.min(local_vp))
-        print(np.max(local_vp))
+        print(np.max(local_vp)) 
         for i in np.arange(0, head_room):
             probs = local_vp[i:i + len(subtitle_mask)]
-            temp = -(subtitle_mask*np.log(probs) + (1-subtitle_mask)*np.log(1-probs))
-            print("TEMP LOSS", temp)
+            # temp = -(subtitle_mask*np.log(probs) + (1-subtitle_mask)*np.log(1-probs))
+            # print("TEMP LOSS", temp)
             log_losses.append(
-                float(np.nanmean(temp))
+                log_loss(subtitle_mask, probs, eps=1*10**-4)
             )
         print("LOG LOSSES:", log_losses)
         if log_losses:
