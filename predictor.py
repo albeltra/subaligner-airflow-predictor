@@ -131,7 +131,7 @@ class Predictor(OldPredictor):
         if os.path.exists(data_path):
             with h5py.File(data_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
-                labels = np.array(f['labels'])[np.newaxis, ...]
+                labels = np.array(f['labels'])
 
         try:
             if train_data is None and labels is None:
