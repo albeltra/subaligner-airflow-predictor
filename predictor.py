@@ -131,7 +131,7 @@ class Predictor(OldPredictor):
         if os.path.exists(data_path):
             with h5py.File(data_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
-                # labels = np.array(f['labels'])[np.newaxis, ...]
+                labels = np.array(f['labels'])[np.newaxis, ...]
 
         try:
             if train_data is None and labels is None:
@@ -198,6 +198,7 @@ class Predictor(OldPredictor):
         original_start = FeatureEmbedder.time_to_sec(subs[0].start)
         shifted_subs = deepcopy(subs)
         subs.shift(seconds=-original_start)
+        result["loss_pre_shift"] = log_loss(labels, voice_probabilities, eps=1*10**-5)
 
         self.__LOGGER.info("[{}] Aligning subtitle with video...".format(os.getpid()))
 
@@ -274,8 +275,6 @@ class Predictor(OldPredictor):
         """
 
         local_subs = deepcopy(subs)
-        print(voice_probabilities)
-        print(voice_probabilities.shape)
 
         local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
         subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs)
