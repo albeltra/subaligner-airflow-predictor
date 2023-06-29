@@ -307,24 +307,9 @@ class Predictor(OldPredictor):
         self.__LOGGER.info(
             "Start calculating {} log loss(es)...".format(head_room)
         )
-        print("SUBTITLE MASK")
-        print(subtitle_mask)
-        print("SUBTITLE_MASK_SHAOPE:", subtitle_mask.shape)
-        print("LOCAL_VP_SHAPE:", local_vp.shape)
-        local_vp = local_vp.reshape(-1,).astype(np.float32)
-        subtitle_mask = subtitle_mask.astype(np.float32)
-        print("LOCAL_VP_SHAPE:", local_vp.shape)
-        print(np.unique(subtitle_mask))
-        eps = 1*10**-4
-        local_vp = np.maximum(eps, np.minimum(1 - eps, local_vp))
-        print(np.min(local_vp))
-        print(np.max(local_vp)) 
         for i in np.arange(0, head_room):
-            probs = local_vp[i:i + len(subtitle_mask)]
-            # temp = -(subtitle_mask*np.log(probs) + (1-subtitle_mask)*np.log(1-probs))
-            # print("TEMP LOSS", temp)
             log_losses.append(
-                log_loss(subtitle_mask, probs, eps=1*10**-4)
+                log_loss(subtitle_mask, local_vp[i:i + len(subtitle_mask)], eps=1*10**-5)
             )
         print("LOG LOSSES:", log_losses)
         if log_losses:
