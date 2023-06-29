@@ -320,7 +320,7 @@ class Predictor(OldPredictor):
             temp = -(subtitle_mask*np.log(probs) + (1-subtitle_mask)*np.log(1-probs))
             print("TEMP LOSS", temp)
             log_losses.append(
-                temp
+                float(np.mean(temp))
             )
         print("LOG LOSSES:", log_losses)
         if log_losses:
