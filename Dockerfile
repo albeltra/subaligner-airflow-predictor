@@ -30,7 +30,7 @@ COPY ./subaligner-trained/ /subaligner/
 
 #RUN apt -y install libblas3 liblapack3 liblapack-dev libblas-dev
 
-RUN conda install -c anaconda numpy
+RUN conda install -c conda-forge libblas
 
 RUN cd /subaligner && python3 -m pip install -e.
 
