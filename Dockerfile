@@ -28,9 +28,9 @@ RUN apt install -y mkvtoolnix
 
 COPY ./subaligner-trained/ /subaligner/
 
-#RUN apt -y install libblas3 liblapack3 liblapack-dev libblas-dev
+RUN apt -y install libblas3 liblapack3 liblapack-dev libblas-dev libatlas-base-dev gfortran
 
-RUN conda install -c conda-forge libblas
+#RUN conda install -c conda-forge libblas
 
 RUN cd /subaligner && python3 -m pip install -e.
 
