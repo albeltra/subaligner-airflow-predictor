@@ -28,6 +28,8 @@ RUN apt install -y mkvtoolnix
 
 COPY ./subaligner-trained/ /subaligner/
 
+RUN apt -y install libblas3 liblapack3 liblapack-dev libblas-dev
+
 RUN cd /subaligner && python3 -m pip install -e.
 
 RUN python3 -m pip install rq==1.12.0 pycountry
