@@ -135,7 +135,7 @@ class Predictor(OldPredictor):
 
         try:
             if train_data is None and labels is None:
-                train_data, _ = self.__feature_embedder.extract_data_and_label_from_audio(
+                train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
                     audio_file_path, None, subtitles=subs
                 )
                 with h5py.File(data_path, 'a') as f:
