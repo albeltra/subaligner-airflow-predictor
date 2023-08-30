@@ -4,7 +4,7 @@ from pathlib import Path
 
 from subaligner.predictor import Predictor
 
-media_path = "King.Richard.2021.1080p.BluRay.x264.DTS-HD.MA.7.1-MT.mkv"
+media_path = ast.literal_eval(os.environ.get('mediaFile'))['path']
 
 subtitle_path = "/audio-subs/" + Path(media_path).name
 audio_file_path = "/audio-subs/" + Path(media_path).name + '.wav'
