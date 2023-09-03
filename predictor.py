@@ -113,7 +113,7 @@ class Predictor(OldPredictor):
         if subtitle_file_path is not None:
             #for extension in ['.vob.srt', '.pgs.srt', '.srt.srt']:
                 #if os.path.exists(subtitle_file_path + extension):
-            subs = Subtitle.load(subtitle_file_path.replace(subtitle_file_path[-4:], ".en.srt").subs
+            subs = Subtitle.load(subtitle_file_path.replace(subtitle_file_path[-4:], ".en.srt")).subs
             result["subtitle_file_path"] = subtitle_file_path + extension
                 #else:
                     #continue
