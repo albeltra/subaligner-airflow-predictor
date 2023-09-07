@@ -111,24 +111,19 @@ class Predictor(OldPredictor):
 
         subs = None
         if subtitle_file_path is not None:
-            for extension in ['.vob.srt', '.pgs.srt', '.srt.srt']:
-                if os.path.exists(subtitle_file_path + extension):
-                    subs = Subtitle.load(subtitle_file_path + extension).subs
-                    result["subtitle_file_path"] = subtitle_file_path + extension
-                else:
-                    continue
+            extension = '.en.srt'
+            subs = Subtitle.load(subtitle_file_path + extension).subs
+            result["subtitle_file_path"] = subtitle_file_path + extension
         elif subtitles is not None:
             subs = subtitles
         else:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
             raise TerminalException("ERROR: No subtitles passed in")
 
         train_data = None
         labels = None
 
         data_path = video_file_path + '.hdf5'
-        if os.path.exists(data_path):
+        if os.path.exists(data_path):  
             with h5py.File(data_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
                 labels = np.array(f['labels'])
