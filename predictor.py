@@ -112,8 +112,8 @@ class Predictor(OldPredictor):
         subs = None
         if subtitle_file_path is not None:
             extension = '.en.srt'
-            subs = Subtitle.load(subtitle_file_path + extension).subs
-            result["subtitle_file_path"] = subtitle_file_path + extension
+            subs = Subtitle.load(subtitle_file_path[:-3] + extension).subs
+            result["subtitle_file_path"] = subtitle_file_path[:-3] + extension  
         elif subtitles is not None:
             subs = subtitles
         else:
@@ -123,7 +123,7 @@ class Predictor(OldPredictor):
         labels = None
 
         data_path = video_file_path + '.hdf5'
-        if os.path.exists(data_path):  
+        if os.path.exists(data_path):
             with h5py.File(data_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
                 labels = np.array(f['labels'])
