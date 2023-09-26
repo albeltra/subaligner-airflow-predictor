@@ -303,7 +303,7 @@ class Predictor(OldPredictor):
         print('MAX CORR:', min_log_loss)
         print('MAX CORR IND:', min_log_loss_idx)
         sorted_inds = np.argsort(losses)[::-1]
-        print('TOP CORR', min_log_loss[sorted_inds[:10]])
-        print('TOP INDS', sorted_inds[:10]) 
+        print('TOP CORR', losses[sorted_inds[:10]]) 
+        print('TOP INDS', sorted_inds[:10])
 
         return min_log_loss, min_log_loss_idx
