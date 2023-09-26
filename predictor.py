@@ -18,6 +18,8 @@ from .exception import TerminalException, NoFrameRateException
 from .network import Network
 from .subtitle import Subtitle
 
+from scipy.signal import correlate
+
 
 class Predictor(OldPredictor):
     def __init__(self, **kwargs):
@@ -278,48 +280,20 @@ class Predictor(OldPredictor):
 
         local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
         subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs)
-        if len(subtitle_mask) == 0:
-            raise TerminalException("Subtitle is empty")
 
-        # Adjust the voice duration when it is shorter than the subtitle duration
-        # so we can have room to shift the subtitle back and forth based on losses.
-        head_room = len(voice_probabilities) - len(subtitle_mask)
-        print('HEAD ROOM:', head_room)
-        self.__LOGGER.debug("head room: {}".format(head_room))
-        if head_room < 0:
-            local_vp = np.vstack(
-                [
-                    voice_probabilities[0],
-                    [np.zeros(voice_probabilities.shape[1])] * (-head_room * 5),
-                ]
-            )
+        if len(subtitle_mask) < len(voice_probabilities):
+            losses = correlate(subtitle_mask, voice_probabilities, 'same')
+            min_log_loss_idx = np.argmax(losses)
+            min_log_loss = losses[min_log_loss_idx]
+
         else:
-            local_vp = voice_probabilities
-        head_room = len(local_vp) - len(subtitle_mask)
-        if head_room > 20000 * 6 * 3:
-            self.__LOGGER.error("head room: {}".format(head_room))
-            raise TerminalException(
-                "Maximum head room reached due to the suspicious audio or subtitle duration"
-            )
-
-        log_losses = []
-        self.__LOGGER.info(
-            "Start calculating {} log loss(es)...".format(head_room)
-        )
-        for i in np.arange(0, head_room):
-            log_losses.append(
-                log_loss(subtitle_mask, local_vp[i:i + len(subtitle_mask)], eps=1*10**-5)
-            )
-        print("LOG LOSSES:", log_losses)
-        if log_losses:
-            min_log_loss = min(log_losses)
-            min_log_loss_idx = log_losses.index(min_log_loss)
-        else:
-            min_log_loss = None
-            min_log_loss_idx = 0
-
-        del local_vp
-        del log_losses
-        gc.collect()
+            inds = np.nonzero(subtitle_mask)[0] 
+            if (inds[-1] - inds[0]) < len(voice_probabilities):
+                losses = correlate(subtitle_mask[inds[0]: inds[-1]], voice_probabilities, 'same')
+                max_ind = np.argmax(losses)
+                min_log_loss_idx = (inds[-1] - inds[0]) + max_ind
+                min_log_loss = losses[max_ind]
+            else:
+                raise TerminalException('Subtitle is longer than audio')
 
         return min_log_loss, min_log_loss_idx
