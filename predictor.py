@@ -280,7 +280,7 @@ class Predictor(OldPredictor):
 
         local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
         subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs).reshape(-1,)
-        local_voice_probabilities = voice_probabilities.reshape(-1,) 
+        local_voice_probabilities = voice_probabilities.reshape(-1,)
 
         if len(subtitle_mask) < len(local_voice_probabilities):
             losses = correlate(subtitle_mask, local_voice_probabilities, 'same')
@@ -296,5 +296,9 @@ class Predictor(OldPredictor):
                 min_log_loss = losses[max_ind]
             else:
                 raise TerminalException('Subtitle is longer than audio')
+        print('SUBTITLE LENGTH:', len(subtitle_mask))
+        print('AUDIO LENGTH:', len(local_voice_probabilities))
+        print('MAX CORR:', min_log_loss)
+        print('MAX CORR IND:', min_log_loss_idx)
 
         return min_log_loss, min_log_loss_idx
