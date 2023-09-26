@@ -283,14 +283,14 @@ class Predictor(OldPredictor):
         local_voice_probabilities = voice_probabilities.reshape(-1,)
 
         if len(subtitle_mask) < len(local_voice_probabilities):
-            losses = correlate(subtitle_mask, local_voice_probabilities, 'same')
+            losses = correlate(subtitle_mask, local_voice_probabilities, 'valid')
             min_log_loss_idx = np.argmax(losses)
             min_log_loss = losses[min_log_loss_idx]
 
         else:
             inds = np.nonzero(subtitle_mask)[0]
             if (inds[-1] - inds[0]) < len(local_voice_probabilities):
-                losses = correlate(subtitle_mask[inds[0]: inds[-1]], local_voice_probabilities, 'same')
+                losses = correlate(subtitle_mask[inds[0]: inds[-1]], local_voice_probabilities, 'valid')
                 max_ind = np.argmax(losses)
                 min_log_loss_idx = (inds[-1] - inds[0]) + max_ind
                 min_log_loss = losses[max_ind]
@@ -298,7 +298,7 @@ class Predictor(OldPredictor):
                 raise TerminalException('Subtitle is longer than audio')
         print('SUBTITLE LENGTH:', len(subtitle_mask))
         print('AUDIO LENGTH:', len(local_voice_probabilities))
-        print('DIFF:', len(local_voice_probabilities) - len(subtitle_mask)) 
+        print('DIFF:', len(local_voice_probabilities) - len(subtitle_mask))
         print('CORR LENGTH:', len(losses))
         print('MAX CORR:', min_log_loss)
         print('MAX CORR IND:', min_log_loss_idx)
