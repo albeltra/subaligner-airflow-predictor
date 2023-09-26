@@ -279,17 +279,18 @@ class Predictor(OldPredictor):
         local_subs = deepcopy(subs)
 
         local_subs.shift(seconds=-FeatureEmbedder.time_to_sec(subs[0].start))
-        subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs)
+        subtitle_mask = Predictor.__get_subtitle_mask(self, local_subs).reshape(-1,)
+        local_voice_probabilities = voice_probabilities.reshape(-1,) 
 
-        if len(subtitle_mask) < len(voice_probabilities):
-            losses = correlate(subtitle_mask, voice_probabilities, 'same')
+        if len(subtitle_mask) < len(local_voice_probabilities):
+            losses = correlate(subtitle_mask, local_voice_probabilities, 'same')
             min_log_loss_idx = np.argmax(losses)
             min_log_loss = losses[min_log_loss_idx]
 
         else:
-            inds = np.nonzero(subtitle_mask)[0] 
-            if (inds[-1] - inds[0]) < len(voice_probabilities):
-                losses = correlate(subtitle_mask[inds[0]: inds[-1]], voice_probabilities, 'same')
+            inds = np.nonzero(subtitle_mask)[0]
+            if (inds[-1] - inds[0]) < len(local_voice_probabilities):
+                losses = correlate(subtitle_mask[inds[0]: inds[-1]], local_voice_probabilities, 'same')
                 max_ind = np.argmax(losses)
                 min_log_loss_idx = (inds[-1] - inds[0]) + max_ind
                 min_log_loss = losses[max_ind]
