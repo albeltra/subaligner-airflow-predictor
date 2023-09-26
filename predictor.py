@@ -298,6 +298,8 @@ class Predictor(OldPredictor):
                 raise TerminalException('Subtitle is longer than audio')
         print('SUBTITLE LENGTH:', len(subtitle_mask))
         print('AUDIO LENGTH:', len(local_voice_probabilities))
+        print('DIFF:', len(local_voice_probabilities) - len(subtitle_mask)) 
+        print('CORR LENGTH:', len(losses))
         print('MAX CORR:', min_log_loss)
         print('MAX CORR IND:', min_log_loss_idx)
 
