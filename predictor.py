@@ -29,7 +29,7 @@ class Predictor(OldPredictor):
             data_file_path: str,
             weights_dir: str = os.path.join(os.path.dirname(__file__), "models", "training", "weights"),
             channel: str = '0',
-    ) -> Tuple[List[SubRipItem], str, Union[np.ndarray, List[float]], Optional[float]]:
+    ) -> Tuple[List[SubRipItem], Union[np.ndarray, List[float]], Optional[float]]:
         """Predict time to shift with single pass
 
             Arguments:
@@ -45,10 +45,10 @@ class Predictor(OldPredictor):
         weights_file_path = self.__get_weights_path(weights_dir)
         frame_rate = None
         try:
-            subs, subtitle_file_path, voice_probabilities = self.__predict(
+            subs, voice_probabilities = self.__predict(
                 data_file_path, weights_file_path, channel=channel
             )
-            return subs, subtitle_file_path, voice_probabilities, frame_rate
+            return subs, voice_probabilities, frame_rate
         finally:
             pass
 
@@ -62,7 +62,7 @@ class Predictor(OldPredictor):
             lock: Optional[threading.RLock] = None,
             network: Optional[Network] = None,
             channel: str = '0'
-    ) -> Tuple[List[SubRipItem], str, np.ndarray]:
+    ) -> Tuple[List[SubRipItem], np.ndarray]:
         """Shift out-of-sync subtitle cues by sending the audio track of an video to the trained network.
 
         Arguments:
@@ -88,13 +88,9 @@ class Predictor(OldPredictor):
         if os.path.exists(data_file_path):
             with h5py.File(data_file_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
-                labels = np.array(f['labels'])
-                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0]).replace('/subaligner-audio-subs/','/audio-subs/')
-                print(subtitle_file_path)
-                print(glob.glob("/data/v5/*"))
-                test = glob.glob("/audio-subs/*.srt")
-                print(os.path.exists(subtitle_file_path))
-                subs = Subtitle.load(test[0]).subs 
+                labels = np.array(f['labels']) 
+                subtitle_file_path = np.array(f['subtitle_file_path'])[0].decode('utf-8').replace('/subaligner-audio-subs/','/audio-subs/')
+                subs = Subtitle.load(subtitle_file_path).subs
         else:
             raise TerminalException("Data file doesnt exist")
 
@@ -162,14 +158,9 @@ class Predictor(OldPredictor):
 
         self.__LOGGER.info("[{}] Subtitle aligned".format(os.getpid()))
 
-        if subtitle_file_path is not None:  # for the first pass
-            seconds_to_shift = (
-                self.__feature_embedder.position_to_duration(pos_to_delay) - original_start
-            )
-        elif subtitles is not None:  # for each in second pass
-            seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap if previous_gap is not None else 0.0
-        else:
-            raise ValueError("ERROR: No subtitles passed in")
+        seconds_to_shift = (
+            self.__feature_embedder.position_to_duration(pos_to_delay) - original_start
+        )
 
         if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
             raise TerminalException(
@@ -207,7 +198,7 @@ class Predictor(OldPredictor):
 
         with open("/airflow/xcom/return.json", "w") as f:
             json.dump(modified_result, f)
-        return shifted_subs, subtitle_file_path, voice_probabilities
+        return shifted_subs, voice_probabilities
 
     def get_min_log_loss_and_index(self, voice_probabilities: np.ndarray, subs: SubRipFile) -> Tuple[float, int]:
         """Returns the minimum loss value and its shift position after going through all possible shifts.
