@@ -88,7 +88,7 @@ class Predictor(OldPredictor):
             with h5py.File(data_file_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
                 labels = np.array(f['labels'])
-                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0]).decode('utf-8') 
+                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0])
                 subs = Subtitle.load(subtitle_file_path).subs
         else:
             raise TerminalException("Data file doesnt exist")
