@@ -94,7 +94,7 @@ class Predictor(OldPredictor):
                 print(glob.glob("/data/v5/*"))
                 test = glob.glob("/audio-subs/*.srt")
                 print(os.path.exists(subtitle_file_path))
-                subs = Subtitle.load(subtitle_file_path[0]).subs 
+                subs = Subtitle.load(test[0]).subs 
         else:
             raise TerminalException("Data file doesnt exist")
 
