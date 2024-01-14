@@ -2,6 +2,7 @@ import datetime
 import gc
 import json
 import os
+import glob 
 import threading
 from sklearn.metrics import log_loss
 import traceback
@@ -90,7 +91,8 @@ class Predictor(OldPredictor):
                 labels = np.array(f['labels'])
                 subtitle_file_path = str(np.array(f['subtitle_file_path'])[0])
                 print(subtitle_file_path)
-                print(os.path.exists(subtitle_file_path)) 
+                print(glob.glob("/subaligner-audio-sub/*"))
+                print(os.path.exists(subtitle_file_path))
                 subs = Subtitle.load(subtitle_file_path).subs
         else:
             raise TerminalException("Data file doesnt exist")
