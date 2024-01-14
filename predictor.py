@@ -92,9 +92,9 @@ class Predictor(OldPredictor):
                 subtitle_file_path = str(np.array(f['subtitle_file_path'])[0]).replace('/subaligner-audio-subs/','/audio-subs/')
                 print(subtitle_file_path)
                 print(glob.glob("/data/v5/*"))
-                print(glob.glob("/audio-subs/*")) 
+                test = glob.glob("/audio-subs/*.srt")
                 print(os.path.exists(subtitle_file_path))
-                subs = Subtitle.load(subtitle_file_path).subs
+                subs = Subtitle.load(subtitle_file_path[0]).subs 
         else:
             raise TerminalException("Data file doesnt exist")
 
