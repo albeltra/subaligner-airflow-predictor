@@ -89,11 +89,10 @@ class Predictor(OldPredictor):
             with h5py.File(data_file_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
                 labels = np.array(f['labels'])
-                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0])
+                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0]).replace('/subaligner-audio-subs/','/audio-subs/')
                 print(subtitle_file_path)
-                print(glob.glob("/data/v5/*"))  
-                print(glob.glob("/audio-subs/*"))
-                print(glob.glob("/subaligner-audio-sub/*"))
+                print(glob.glob("/data/v5/*"))
+                print(glob.glob("/audio-subs/*")) 
                 print(os.path.exists(subtitle_file_path))
                 subs = Subtitle.load(subtitle_file_path).subs
         else:
