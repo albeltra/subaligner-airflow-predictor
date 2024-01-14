@@ -25,7 +25,7 @@ class Predictor(OldPredictor):
 
     def predict_single_pass(
             self,
-            video_file_path: str,
+            data_file_path: str,
             subtitle_file_path: str,
             weights_dir: str = os.path.join(os.path.dirname(__file__), "models", "training", "weights"),
             channel: str = '0',
@@ -48,7 +48,7 @@ class Predictor(OldPredictor):
         frame_rate = None
         try:
             subs, audio_file_path, voice_probabilities = self.__predict(
-                video_file_path, subtitle_file_path, weights_file_path, audio_file_path, channel=channel
+                data_file_path, subtitle_file_path, weights_file_path, audio_file_path, channel=channel
             )
             try:
                 frame_rate = self.__media_helper.get_frame_rate(video_file_path)
@@ -62,7 +62,7 @@ class Predictor(OldPredictor):
 
     def __predict(
             self,
-            video_file_path: Optional[str],
+            data_file_path: Optional[str],
             subtitle_file_path: Optional[str],
             weights_file_path: str,
             audio_file_path: Optional[str] = None,
@@ -93,59 +93,16 @@ class Predictor(OldPredictor):
             network = self.__initialise_network(os.path.dirname(weights_file_path), self.__LOGGER)
         result: Dict[str, Any] = {}
         pred_start = datetime.datetime.now()
-        if audio_file_path is not None:
-            result["audio_file_path"] = audio_file_path
-        elif video_file_path is not None:
-            t = datetime.datetime.now()
-            audio_file_path = self.__media_helper.extract_audio(
-                video_file_path, True, 16000, channel=channel
-            )
-            self.__LOGGER.debug(
-                "[{}] Audio extracted after {}".format(
-                    os.getpid(), str(datetime.datetime.now() - t)
-                )
-            )
-            result["video_file_path"] = video_file_path
-        else:
-            raise TerminalException("Neither audio nor video is passed in")
 
-        subs = None
-        if subtitle_file_path is not None:
-            for extension in ['.vob.srt', '.pgs.srt', '.srt.srt']:
-                if os.path.exists(subtitle_file_path + extension):
-                    subs = Subtitle.load(subtitle_file_path + extension).subs
-                    result["subtitle_file_path"] = subtitle_file_path + extension
-                else:
-                    continue
-        elif subtitles is not None:
-            subs = subtitles
-        else:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise TerminalException("ERROR: No subtitles passed in")
 
-        train_data = None
-        labels = None
-
-        data_path = video_file_path + '.hdf5'
-        if os.path.exists(data_path):
-            with h5py.File(data_path, 'r') as f:
+        if os.path.exists(data_file_path):
+            with h5py.File(data_file_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
                 labels = np.array(f['labels'])
-
-        try:
-            if train_data is None and labels is None:
-                train_data, labels = self.__feature_embedder.extract_data_and_label_from_audio(
-                    audio_file_path, None, subtitles=subs
-                )
-                with h5py.File(data_path, 'a') as f:
-                    f['data'] = train_data
-                    f['labels'] = labels
-                train_data = train_data[np.newaxis, ...]
-        except TerminalException:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
-            raise
+                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0])
+                subs = Subtitle.load(subtitle_file_path).subs
+        else:
+            raise TerminalException("Data file doesnt exist")
 
         # train_data = np.array([np.rot90(val) for val in train_data])
         # train_data = train_data - np.mean(train_data, axis=0)
@@ -220,13 +177,9 @@ class Predictor(OldPredictor):
         elif subtitles is not None:  # for each in second pass
             seconds_to_shift = self.__feature_embedder.position_to_duration(pos_to_delay) - previous_gap if previous_gap is not None else 0.0
         else:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
             raise ValueError("ERROR: No subtitles passed in")
 
         if abs(seconds_to_shift) > Predictor.__MAX_SHIFT_IN_SECS:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
             raise TerminalException(
                 "Average shift duration ({} secs) have been reached".format(
                     Predictor.__MAX_SHIFT_IN_SECS
