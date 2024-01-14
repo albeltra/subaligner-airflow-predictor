@@ -26,10 +26,8 @@ class Predictor(OldPredictor):
     def predict_single_pass(
             self,
             data_file_path: str,
-            subtitle_file_path: str,
             weights_dir: str = os.path.join(os.path.dirname(__file__), "models", "training", "weights"),
             channel: str = '0',
-            audio_file_path: str = None
     ) -> Tuple[List[SubRipItem], str, Union[np.ndarray, List[float]], Optional[float]]:
         """Predict time to shift with single pass
 
@@ -44,28 +42,19 @@ class Predictor(OldPredictor):
         """
 
         weights_file_path = self.__get_weights_path(weights_dir)
-        audio_file_path = audio_file_path if audio_file_path else None
         frame_rate = None
         try:
-            subs, audio_file_path, voice_probabilities = self.__predict(
-                data_file_path, subtitle_file_path, weights_file_path, audio_file_path, channel=channel
+            subs, subtitle_file_path, voice_probabilities = self.__predict(
+                data_file_path, weights_file_path, channel=channel
             )
-            try:
-                frame_rate = self.__media_helper.get_frame_rate(video_file_path)
-                self.__feature_embedder.step_sample = 1 / frame_rate
-                self.__on_frame_timecodes(subs)
-            except NoFrameRateException:
-                self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
-            return subs, audio_file_path, voice_probabilities, frame_rate
+            return subs, subtitle_file_path, voice_probabilities, frame_rate
         finally:
             pass
 
     def __predict(
             self,
             data_file_path: Optional[str],
-            subtitle_file_path: Optional[str],
             weights_file_path: str,
-            audio_file_path: Optional[str] = None,
             subtitles: Optional[SubRipFile] = None,
             max_shift_secs: Optional[float] = None,
             previous_gap: Optional[float] = None,
@@ -99,7 +88,7 @@ class Predictor(OldPredictor):
             with h5py.File(data_file_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
                 labels = np.array(f['labels'])
-                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0])
+                subtitle_file_path = str(np.array(f['subtitle_file_path'])[0]).decode('utf-8') 
                 subs = Subtitle.load(subtitle_file_path).subs
         else:
             raise TerminalException("Data file doesnt exist")
@@ -144,8 +133,6 @@ class Predictor(OldPredictor):
                 gc.collect()
 
         if len(voice_probabilities) <= 0:
-            if os.path.exists(audio_file_path):
-                os.remove(audio_file_path)
             raise TerminalException(
                 "ERROR: Audio is too short and no voice was detected"
             )
@@ -213,10 +200,9 @@ class Predictor(OldPredictor):
         for key, value in result.items():
             modified_result['SUBALIGNER_' + key] = value
 
-        modified_result['SUBALIGNER_Extension'] = video_file_path.split('.')[-1]
         with open("/airflow/xcom/return.json", "w") as f:
             json.dump(modified_result, f)
-        return shifted_subs, audio_file_path, voice_probabilities
+        return shifted_subs, subtitle_file_path, voice_probabilities
 
     def get_min_log_loss_and_index(self, voice_probabilities: np.ndarray, subs: SubRipFile) -> Tuple[float, int]:
         """Returns the minimum loss value and its shift position after going through all possible shifts.

@@ -6,6 +6,4 @@ from subaligner.predictor import Predictor
 data_file_path = ast.literal_eval(os.environ.get('dataPath'))['path']
 
 predictor = Predictor()
-predictor.predict_single_pass(data_file_path=data_file_path,
-                              subtitle_file_path=None,
-                              audio_file_path=None)
+predictor.predict_single_pass(data_file_path=data_file_path)
