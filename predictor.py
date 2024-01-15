@@ -88,9 +88,10 @@ class Predictor(OldPredictor):
         if os.path.exists(data_file_path):
             with h5py.File(data_file_path, 'r') as f:
                 train_data = np.array(f['data'])[np.newaxis, ...]
-                labels = np.array(f['labels']) 
-                subtitle_file_path = np.array(f['subtitle_file_path'])[0].decode('utf-8').replace('/subaligner-audio-subs/','/audio-subs/')
-                subs = Subtitle.load(subtitle_file_path).subs
+                labels = np.array(f['labels'])
+                subtitle_file_path = np.array(f['subtitle_file_path'])[0].decode('utf-8')
+                subs = Subtitle.load(subtitle_file_path.replace('/subaligner-audio-subs/','/audio-subs/')).subs
+                result['subtitle_file_path'] = subtitle_file_path
         else:
             raise TerminalException("Data file doesnt exist")
 
