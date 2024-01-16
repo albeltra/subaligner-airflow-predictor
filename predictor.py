@@ -56,6 +56,12 @@ class Predictor(OldPredictor):
                 self.__on_frame_timecodes(subs)
             except NoFrameRateException:
                 self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
+                frame_rate = 25
+            Subtitle.save_subs_as_target_format(subs=subs,
+                                                source_file_path=subtitle_file_path,
+                                                target_file_path=subtitle_file_path[:-4] + '.aligned' + '.srt',
+                                                frame_rate=frame_rate)
+
             return subs, audio_file_path, voice_probabilities, frame_rate
         finally:
             pass
@@ -249,6 +255,7 @@ class Predictor(OldPredictor):
             shifted_subs.shift(seconds=max_shift_secs)
         else:
             shifted_subs.shift(seconds=seconds_to_shift)
+
         self.__LOGGER.debug("[{}] Subtitle shifted".format(os.getpid()))
 
         modified_result = {}
