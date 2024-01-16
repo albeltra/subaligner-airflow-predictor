@@ -58,8 +58,8 @@ class Predictor(OldPredictor):
                 self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
                 frame_rate = 25
             Subtitle.save_subs_as_target_format(subs=subs,
-                                                source_file_path=subtitle_file_path[:-4] + '.en.srt', 
-                                                target_file_path=subtitle_file_path[:-4] + '.aligned' + '.srt',
+                                                source_file_path=subtitle_file_path[:-4] + '.en.srt',
+                                                target_file_path=subtitle_file_path[:-4] + '.en.aligned.srt',
                                                 frame_rate=frame_rate)
 
             return subs, audio_file_path, voice_probabilities, frame_rate
