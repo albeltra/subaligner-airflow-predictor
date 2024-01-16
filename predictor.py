@@ -56,9 +56,9 @@ class Predictor(OldPredictor):
                 self.__on_frame_timecodes(subs)
             except NoFrameRateException:
                 self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
-                frame_rate = 25 
+                frame_rate = 25
             Subtitle.save_subs_as_target_format(subs=subs,
-                                                source_file_path=subtitle_file_path + '.srt',
+                                                source_file_path=subtitle_file_path[:-4] + '.en.srt', 
                                                 target_file_path=subtitle_file_path[:-4] + '.aligned' + '.srt',
                                                 frame_rate=frame_rate)
 
