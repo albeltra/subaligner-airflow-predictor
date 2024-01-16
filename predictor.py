@@ -57,8 +57,14 @@ class Predictor(OldPredictor):
             except NoFrameRateException:
                 self.__LOGGER.warning("Cannot detect the frame rate for %s" % video_file_path)
                 frame_rate = 25
+            if os.path.exists(subtitle_file_path[:-4] + '.en.srt'):
+                sub_path = subtitle_file_path[:-4] + '.en.srt'
+            elif os.path.exists(subtitle_file_path[:-4] + '.en.hi.srt'):
+                sub_path = subtitle_file_path[:-4] + '.en.hi.srt'
+            else:
+                raise FileNotFoundError 
             Subtitle.save_subs_as_target_format(subs=subs,
-                                                source_file_path=subtitle_file_path[:-4] + '.en.srt',
+                                                source_file_path=sub_path,
                                                 target_file_path=subtitle_file_path[:-4] + '.en.aligned.srt',
                                                 frame_rate=frame_rate)
 
@@ -120,7 +126,7 @@ class Predictor(OldPredictor):
             try:
                 extension = '.en.srt'
                 subs = Subtitle.load(subtitle_file_path[:-4] + extension).subs
-            except FileNotFoundError: 
+            except FileNotFoundError:
                 extension = '.en.hi.srt'
                 subs = Subtitle.load(subtitle_file_path[:-4] + extension).subs
             result["subtitle_file_path"] = subtitle_file_path[:-4] + extension
